@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiz do Conhecimento Bíblico</title>
+  <style>
+    /* Cole TODO o código do style.css aqui dentro */
+    :root {
+      --primary-color: #7A5C32;
+      --primary-hover: #5F4624;
+      --bg-gradient: linear-gradient(135deg, #1e1b18 0%, #2a241e 100%);
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-color: #2c2724;
+      --text-muted: #6b635b;
+      --correct-color: #2e7d32;
+      --wrong-color: #c62828;
+      --border-radius: 12px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
+    body { background: var(--bg-gradient); min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px; color: var(--text-color); }
+    .quiz-container { width: 100%; max-width: 600px; }
+    .header { text-align: center; color: #f3ece4; margin-bottom: 25px; }
+    .header .symbol { font-size: 2.5rem; color: #d4af37; margin-bottom: 5px; }
+    .header h1 { font-size: 2rem; font-weight: 600; margin-bottom: 5px; }
+    .header p { color: #c5b8a5; font-size: 0.95rem; }
+    .quiz-progress { color: #d4af37; font-size: 0.9rem; margin-bottom: 12px; display: flex; flex-direction: column; gap: 6px; }
+    .progress-bar { width: 100%; height: 8px; background: rgba(255, 255, 255, 0.2); border-radius: 4px; overflow: hidden; }
+    #progress-fill { height: 100%; width: 0%; background: #d4af37; transition: width 0.3s ease; }
+    .card { background: var(--card-bg); padding: 25px; border-radius: var(--border-radius); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+    #question-text { font-size: 1.25rem; margin-bottom: 20px; line-height: 1.4; color: #1a1715; }
+    .options-grid { display: flex; flex-direction: column; gap: 12px; }
+    .option-btn { background: #f4f0eb; border: 2px solid #e0d8ce; padding: 14px 18px; border-radius: 8px; text-align: left; font-size: 1rem; color: var(--text-color); cursor: pointer; transition: all 0.2s ease; }
+    .option-btn:hover:not([disabled]) { background: #e8ded2; border-color: #c5b59f; }
+    .option-btn.correct { background: #e8f5e9 !important; border-color: var(--correct-color) !important; color: var(--correct-color) !important; font-weight: 600; }
+    .option-btn.wrong { background: #ffebee !important; border-color: var(--wrong-color) !important; color: var(--wrong-color) !important; }
+    .actions { margin-top: 20px; display: flex; justify-content: flex-end; }
+    .btn { background: var(--primary-color); color: #fff; border: none; padding: 12px 24px; font-size: 1rem; font-weight: 600; border-radius: 8px; cursor: pointer; transition: background 0.2s ease; }
+    .btn:hover:not([disabled]) { background: var(--primary-hover); }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .result-card { text-align: center; padding: 40px 25px; }
+    .result-icon { font-size: 3rem; margin-bottom: 10px; }
+    .result-card h2 { font-size: 1.8rem; margin-bottom: 10px; }
+    #score-text { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 10px; }
+    .feedback { font-weight: 600; color: var(--primary-color); margin-bottom: 25px; }
+    .hidden { display: none; }
+  </style>
+</head>
+<body>
+  <div class="quiz-container">
+    <header class="header">
+      <div class="symbol">✝</div>
+      <h1>Conhecimento Bíblico</h1>
+      <p>Teste seus conhecimentos básicos sobre a Bíblia</p>
+    </header>
+
+    <div id="quiz-screen">
+      <div class="quiz-progress">
+        <span id="progress-text">Pergunta 1 de 5</span>
+        <div class="progress-bar">
+          <div id="progress-fill"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 id="question-text">Carregando pergunta...</h2>
+        <div id="options-container" class="options-grid"></div>
+      </div>
+
+      <div class="actions">
+        <button id="next-btn" class="btn" disabled>Próxima Pergunta</button>
+      </div>
+    </div>
+
+    <div id="result-screen" class="hidden">
+      <div class="card result-card">
+        <div class="result-icon">✨</div>
+        <h2>Quiz Concluído!</h2>
+        <p id="score-text">Você acertou 0 de 5 perguntas.</p>
+        <p id="feedback-message" class="feedback"></p>
+        <button id="restart-btn" class="btn">Tentar Novamente</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* Cole TODO o código do script.js aqui dentro */
+    const questions = [
+      { question: "Qual é o primeiro livro da Bíblia?", options: ["Êxodo", "Gênesis", "Salmos", "Mateus"], correct: 1 },
+      { question: "Quem construiu a arca segundo a Bíblia?", options: ["Moisés", "Abraão", "Noé", "Davi"], correct: 2 },
+      { question: "Em qual cidade Jesus nasceu?", options: ["Jerusalém", "Nazaré", "Belém", "Cafarnaum"], correct: 2 },
+      { question: "Quantos discípulos principais (apóstolos) Jesus escolheu?", options: ["7", "10", "12", "40"], correct: 2 },
+      { question: "Qual mandamento diz 'Honra teu pai e tua mãe'?", options: ["1º Mandamento", "5º Mandamento", "8º Mandamento", "10º Mandamento"], correct: 1 }
+    ];
+
+    let currentQuestionIndex = 0;
+    let score = 0;
+    let selectedOption = null;
+
+    const questionText = document.getElementById("question-text");
+    const optionsContainer = document.getElementById("options-container");
+    const nextBtn = document.getElementById("next-btn");
+    const progressText = document.getElementById("progress-text");
+    const progressFill = document.getElementById("progress-fill");
+
+    const quizScreen = document.getElementById("quiz-screen");
+    const resultScreen = document.getElementById("result-screen");
+    const scoreText = document.getElementById("score-text");
+    const feedbackMessage = document.getElementById("feedback-message");
+    const restartBtn = document.getElementById("restart-btn");
+
+    function startQuiz() {
+      currentQuestionIndex = 0;
+      score = 0;
+      quizScreen.classList.remove("hidden");
+      resultScreen.classList.add("hidden");
+      loadQuestion();
+    }
+
+    function loadQuestion() {
+      selectedOption = null;
+      nextBtn.disabled = true;
+
+      const currentQ = questions[currentQuestionIndex];
+      progressText.innerText = `Pergunta ${currentQuestionIndex + 1} de ${questions.length}`;
+      progressFill.style.width = `${((currentQuestionIndex + 1) / questions.length) * 100}%`;
+      questionText.innerText = currentQ.question;
+
+      optionsContainer.innerHTML = "";
+      currentQ.options.forEach((optionText, index) => {
+        const button = document.createElement("button");
+        button.classList.add("option-btn");
+        button.innerText = optionText;
+        button.addEventListener("click", () => selectOption(index, button));
+        optionsContainer.appendChild(button);
+      });
+    }
+
+    function selectOption(index, selectedBtn) {
+      if (selectedOption !== null) return;
+
+      selectedOption = index;
+      const currentQ = questions[currentQuestionIndex];
+      const buttons = optionsContainer.querySelectorAll(".option-btn");
+
+      buttons.forEach(btn => btn.disabled = true);
+
+      if (index === currentQ.correct) {
+        selectedBtn.classList.add("correct");
+        score++;
+      } else {
+        selectedBtn.classList.add("wrong");
+        buttons[currentQ.correct].classList.add("correct");
+      }
+
+      nextBtn.disabled = false;
+    }
+
+    nextBtn.addEventListener("click", () => {
+      currentQuestionIndex++;
+      if (currentQuestionIndex < questions.length) {
+        loadQuestion();
+      } else {
+        showResults();
+      }
+    });
+
+    function showResults() {
+      quizScreen.classList.add("hidden");
+      resultScreen.classList.remove("hidden");
+      scoreText.innerText = `Você acertou ${score} de ${questions.length} perguntas.`;
+
+      if (score === questions.length) {
+        feedbackMessage.innerText = "Excelente! Seu conhecimento é muito bom!";
+      } else if (score >= questions.length / 2) {
+        feedbackMessage.innerText = "Muito bom! Você tem um bom conhecimento base.";
+      } else {
+        feedbackMessage.innerText = "Continue praticando e estudando!";
+      }
+    }
+
+    restartBtn.addEventListener("click", startQuiz);
+    startQuiz();
+  </script>
+</body>
+</html>
